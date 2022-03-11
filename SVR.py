@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import functions as fcn
-import matplotlib.pyplot as plt
 from sklearn.svm import SVR
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
@@ -33,11 +32,26 @@ met_pred=svr_multi.predict(gen_test)
 met_test = pd.DataFrame(met_test, columns=['MET12', 'MET21', 'MET25', 'MET38', 'MET39', 'MET66', 'MET77', 'MET88', 'MET102', 'MET111', 'MET119', 'MET122'])
 met_pred = pd.DataFrame(met_pred, columns=['MET12', 'MET21', 'MET25', 'MET38', 'MET39', 'MET66', 'MET77', 'MET88', 'MET102', 'MET111', 'MET119', 'MET122'])
 
-mse = mean_squared_error(met_test, met_pred) 
-mae = mean_absolute_error(met_test, met_pred)  
+model_mse = mean_squared_error(met_test, met_pred) 
+model_mae = mean_absolute_error(met_test, met_pred)  
 
-corr_matrix = np.corrcoef(met_test.T, met_pred.T)[0:12, 12:24]
-metabolites_correlations = np.mean(corr_matrix, axis = 1)
+columns=['MET12', 'MET21', 'MET25', 'MET38', 'MET39', 'MET66', 'MET77', 'MET88', 'MET102', 'MET111', 'MET119', 'MET122']
+maes = []
+mses = []
+
+for i in columns:
+    mae = mean_absolute_error(met_test[i], met_pred[i])  
+    maes.append(mae)
+    mse = mean_squared_error(met_test[i], met_pred[i])  
+    mses.append(mse)
+
+sd_mae = np.std(maes)
+sd_mse = np.std(mses)
+
+print(model_mse, sd_mae)
+print(model_mae, sd_mse)
+print(metabolites_correlations) 
+
 
 
 
