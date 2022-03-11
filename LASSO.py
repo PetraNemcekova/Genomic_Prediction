@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import functions as fcn
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, mean_squared_error
-from sklearn import linear_model
+from sklearn.linear_model import Lasso
 
 
 # # Loading preprocessed data
@@ -15,23 +14,36 @@ met_arr, gen_arr, gen_feature_names = fcn.PrepareForPrediction(met_preprocessed,
 
 # deviding into training and testing set
 
-met_train, met_test, gen_train, gen_test = train_test_split(met_arr, gen_arr, test_size = 0.3,random_state=0)
+met_train, met_test, gen_train, gen_test = train_test_split(met_arr, gen_arr, test_size = 0.1)
 met_train = np.delete(met_train,7, axis = 1)
 met_test = np.delete(met_test,7, axis = 1)
 
 # LASSO 
 
-lasso = linear_model.Lasso(alpha=0.3)
-lasso.fit(gen_train, met_train) 
-met_pred = lasso.predict(gen_test)
+lasso_model = Lasso(alpha=0.3)
+lasso_model.fit(gen_train, met_train) 
+met_pred = lasso_model.predict(gen_test)
 
 # Evaluation
+
+mse_model = mean_squared_error(met_test, met_pred) 
+mae_model = mean_absolute_error(met_test, met_pred)  
 
 met_test = pd.DataFrame(met_test, columns=['MET12', 'MET21', 'MET25', 'MET38', 'MET39', 'MET66', 'MET77', 'MET88', 'MET102', 'MET111', 'MET119', 'MET122'])
 met_pred = pd.DataFrame(met_pred, columns=['MET12', 'MET21', 'MET25', 'MET38', 'MET39', 'MET66', 'MET77', 'MET88', 'MET102', 'MET111', 'MET119', 'MET122'])
 
-mse = mean_squared_error(met_test, met_pred) 
-mae = mean_absolute_error(met_test, met_pred)  
+columns=['MET12', 'MET21', 'MET25', 'MET38', 'MET39', 'MET66', 'MET77', 'MET88', 'MET102', 'MET111', 'MET119', 'MET122']
+maes = []
+mses = []
 
-corr_matrix = np.corrcoef(met_test.T, met_pred.T)[0:12, 12:24]
-metabolites_correlations = np.mean(corr_matrix, axis = 1)
+for i in columns:
+    mae = mean_absolute_error(met_test[i], met_pred[i])  
+    maes.append(mae)
+    mse = mean_squared_error(met_test[i], met_pred[i])  
+    mses.append(mse)
+
+sd_mae = np.std(maes)
+sd_mse = np.std(mses)
+
+print(mae_model, sd_mae)
+print(mse_model, sd_mse)
